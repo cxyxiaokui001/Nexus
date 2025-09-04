@@ -1,9 +1,14 @@
 package com.xiaokui.nexus.service;
 
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
+import com.xiaokui.nexus.model.dto.user.UserQueryRequest;
 import com.xiaokui.nexus.model.entity.User;
 import com.xiaokui.nexus.model.vo.LoginUserVO;
+import com.xiaokui.nexus.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 /**
  * 用户 服务层。
@@ -38,7 +43,7 @@ public interface UserService extends IService<User> {
      * @param request
      * @return
      */
-    LoginUserVO getLoginUser(HttpServletRequest request);
+    User getLoginUser(HttpServletRequest request);
 
     /**
      * 用户注销
@@ -49,4 +54,11 @@ public interface UserService extends IService<User> {
     boolean userLogout(HttpServletRequest request);
 
 
+    UserVO getUserVO(User user);
+
+    List<UserVO> getUserVOList(List<User> userList);
+
+    QueryWrapper getQueryWrapper(UserQueryRequest userQueryRequest);
+
+    String getEncryptPassword(String userPassword);
 }

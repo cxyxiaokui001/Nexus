@@ -1,4 +1,4 @@
-package com.xiaokui.nexus.model.dto;
+package com.xiaokui.nexus.model.dto.user;
 
 import lombok.Data;
 
