@@ -84,6 +84,17 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>
+            <version>1.4.0-beta10</version>
+        </dependency>
+
     </dependencies>
 
     <build>
