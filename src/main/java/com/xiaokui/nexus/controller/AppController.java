@@ -14,10 +14,7 @@ import com.xiaokui.nexus.constant.UserConstant;
 import com.xiaokui.nexus.exception.BusinessException;
 import com.xiaokui.nexus.exception.ErrorCode;
 import com.xiaokui.nexus.exception.ThrowUtils;
-import com.xiaokui.nexus.model.dto.app.AppAddRequest;
-import com.xiaokui.nexus.model.dto.app.AppAdminUpdateRequest;
-import com.xiaokui.nexus.model.dto.app.AppQueryRequest;
-import com.xiaokui.nexus.model.dto.app.AppUpdateRequest;
+import com.xiaokui.nexus.model.dto.app.*;
 import com.xiaokui.nexus.model.entity.User;
 import com.xiaokui.nexus.model.enums.CodeGenTypeEnum;
 import com.xiaokui.nexus.model.vo.AppVO;
@@ -332,5 +329,23 @@ public class AppController {
     }
 
 
+    /**
+     * 应用部署
+     *
+     * @param appDeployRequest 部署请求
+     * @param request          请求
+     * @return 部署 URL
+     */
+    @PostMapping("/deploy")
+    public BaseResponse<String> deployApp(@RequestBody AppDeployRequest appDeployRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(appDeployRequest == null, ErrorCode.PARAMS_ERROR);
+        Long appId = appDeployRequest.getAppId();
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 不能为空");
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser(request);
+        // 调用服务部署应用
+        String deployUrl = appService.deployApp(appId, loginUser);
+        return ResultUtils.success(deployUrl);
+    }
 
 }
