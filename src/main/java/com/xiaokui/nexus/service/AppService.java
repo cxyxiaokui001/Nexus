@@ -4,7 +4,9 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.xiaokui.nexus.model.dto.app.AppQueryRequest;
 import com.xiaokui.nexus.model.entity.App;
+import com.xiaokui.nexus.model.entity.User;
 import com.xiaokui.nexus.model.vo.AppVO;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -14,6 +16,8 @@ import java.util.List;
  * @author cxyxiaokui
  */
 public interface AppService extends IService<App> {
+
+    Flux<String> chatToGenCode(Long appId, String message, User loginUser);
 
     AppVO getAppVO(App app);
 
