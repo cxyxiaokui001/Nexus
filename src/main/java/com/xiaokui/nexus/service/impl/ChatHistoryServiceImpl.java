@@ -1,5 +1,6 @@
 package com.xiaokui.nexus.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -15,17 +16,23 @@ import com.xiaokui.nexus.model.entity.User;
 import com.xiaokui.nexus.model.enums.ChatHistoryMessageTypeEnum;
 import com.xiaokui.nexus.service.AppService;
 import com.xiaokui.nexus.service.ChatHistoryService;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 对话历史 服务层实现。
  *
  * @author cxyxiaokui
  */
+@Slf4j
 @Service
 public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatHistory>  implements ChatHistoryService{
 
@@ -101,9 +108,9 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
 
     @Override
     public Page<ChatHistory> listAppChatHistoryByPage(Long appId,
-                                                    Integer pageSize,
-                                                    LocalDateTime lastCreateTime,
-                                                    User loginUser){
+                                                      Integer pageSize,
+                                                      LocalDateTime lastCreateTime,
+                                                      User loginUser){
         ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用ID不能为空");
         ThrowUtils.throwIf(pageSize <= 0 || pageSize > 50, ErrorCode.PARAMS_ERROR, "页面大小必须在1-50之间");
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
@@ -120,5 +127,40 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
         QueryWrapper queryWrapper = this.getQueryWrapper(queryRequest);
         //查询数据
         return this.page(Page.of(1, pageSize), queryWrapper);
+    }
+
+    @Override
+    public Integer loadChatHistoryToMemory(Long appId, MessageWindowChatMemory chatMemory, Integer maxCount){
+        try {
+            QueryWrapper queryWrapper = QueryWrapper.create()
+                    .eq(ChatHistory::getAppId, appId)
+                    .orderBy(ChatHistory::getCreateTime,false)
+                    .limit(1,maxCount);
+            List<ChatHistory> chatHistoryList = this.list(queryWrapper);
+            if(CollUtil.isEmpty(chatHistoryList)){
+                return 0;
+            }
+            //反转列表，确保按时间正序
+            chatHistoryList = chatHistoryList.reversed();
+            //按时间顺序添加到记忆中
+            int loadedCount = 0;
+            //先清理缓存，防止重复加载
+            chatMemory.clear();
+            for (ChatHistory chatHistory : chatHistoryList) {
+                if(ChatHistoryMessageTypeEnum.USER.getValue().equals(chatHistory.getMessageType())){
+                    chatMemory.add(UserMessage.from(chatHistory.getMessage()));
+                    loadedCount++;
+                }
+                else if(ChatHistoryMessageTypeEnum.AI.getValue().equals(chatHistory.getMessageType())){
+                    chatMemory.add(AiMessage.from(chatHistory.getMessage()));
+                    loadedCount++;
+                }
+            }
+            log.info("成功为appId：{} 加载了：{}条历史对话", appId, loadedCount);
+            return loadedCount;
+        } catch (Exception e) {
+            log.error("加载历史对话失败，appId： {}，error：{}", appId, e.getMessage());
+            return 0;
+        }
     }
 }

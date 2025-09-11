@@ -6,6 +6,7 @@ import com.mybatisflex.core.service.IService;
 import com.xiaokui.nexus.model.dto.chatHistory.ChatHistoryQueryRequest;
 import com.xiaokui.nexus.model.entity.ChatHistory;
 import com.xiaokui.nexus.model.entity.User;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 
 import java.time.LocalDateTime;
 
@@ -27,4 +28,5 @@ public interface ChatHistoryService extends IService<ChatHistory> {
                                              LocalDateTime lastCreateTime,
                                              User loginUser);
 
+    Integer loadChatHistoryToMemory(Long appId, MessageWindowChatMemory chatMemory, Integer maxCount);
 }
