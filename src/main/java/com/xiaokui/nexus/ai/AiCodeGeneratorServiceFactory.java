@@ -22,7 +22,7 @@ import java.time.Duration;
 
 @Slf4j
 @Configuration
-public class AICodeGeneratorServiceFactory {
+public class AiCodeGeneratorServiceFactory {
 
     @Resource
     private ChatModel chatModel;
@@ -46,7 +46,7 @@ public class AICodeGeneratorServiceFactory {
      * - 写入后 30 分钟过期
      * - 访问后 10 分钟过期
      */
-    private final Cache<String,AICodeGeneratorService> serviceCache= Caffeine.newBuilder()
+    private final Cache<String, AiCodeGeneratorService> serviceCache= Caffeine.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(Duration.ofMinutes(30))
             .expireAfterAccess(Duration.ofMinutes(10))
@@ -60,7 +60,7 @@ public class AICodeGeneratorServiceFactory {
      * @param appId 应用ID
      * @return AI 服务实例
      */
-    public AICodeGeneratorService getAICodeGeneratorService(long appId, CodeGenTypeEnum codeGenType) {
+    public AiCodeGeneratorService getAICodeGeneratorService(long appId, CodeGenTypeEnum codeGenType) {
         String cacheKey = buildCacheKey(appId, codeGenType);
         return serviceCache.get(cacheKey, key -> createAiCodeGeneratorService(appId,codeGenType));
     }
@@ -70,7 +70,7 @@ public class AICodeGeneratorServiceFactory {
      * @param appId
      * @return
      */
-    public AICodeGeneratorService getAICodeGeneratorService(long appId) {
+    public AiCodeGeneratorService getAICodeGeneratorService(long appId) {
         return getAICodeGeneratorService(appId, CodeGenTypeEnum.HTML);
     }
 
@@ -83,7 +83,7 @@ public class AICodeGeneratorServiceFactory {
      * @param appId
      * @return
      */
-    private AICodeGeneratorService createAiCodeGeneratorService(long appId, CodeGenTypeEnum codeGenType) {
+    private AiCodeGeneratorService createAiCodeGeneratorService(long appId, CodeGenTypeEnum codeGenType) {
         // 根据 appId 构建独立的对话记忆
         MessageWindowChatMemory chatMemory = MessageWindowChatMemory
                 .builder()
@@ -96,7 +96,7 @@ public class AICodeGeneratorServiceFactory {
         // 根据代码生成类型选择不同的模型配置
         return switch (codeGenType) {
             // Vue 项目生成使用推理模型
-            case VUE_PROJECT -> AiServices.builder(AICodeGeneratorService.class)
+            case VUE_PROJECT -> AiServices.builder(AiCodeGeneratorService.class)
                     .streamingChatModel(reasoningStreamingChatModel)
                     .chatMemoryProvider(memoryId -> chatMemory)
                     .tools(new FileWriteTool())
@@ -105,7 +105,7 @@ public class AICodeGeneratorServiceFactory {
                     ))
                     .build();
             // HTML 和多文件生成使用默认模型
-            case HTML, MULTI_FILE -> AiServices.builder(AICodeGeneratorService.class)
+            case HTML, MULTI_FILE -> AiServices.builder(AiCodeGeneratorService.class)
                     .chatModel(chatModel)
                     .streamingChatModel(openAiStreamingChatModel)
                     .chatMemory(chatMemory)
@@ -117,7 +117,7 @@ public class AICodeGeneratorServiceFactory {
 
 
     @Bean
-    public AICodeGeneratorService aiCodeGeneratorService() {
+    public AiCodeGeneratorService aiCodeGeneratorService() {
         return getAICodeGeneratorService(0L);
     }
 }

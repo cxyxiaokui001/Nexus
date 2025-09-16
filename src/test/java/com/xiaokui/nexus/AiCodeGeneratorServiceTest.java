@@ -1,6 +1,6 @@
 package com.xiaokui.nexus;
 
-import com.xiaokui.nexus.ai.AICodeGeneratorService;
+import com.xiaokui.nexus.ai.AiCodeGeneratorService;
 import com.xiaokui.nexus.ai.model.HtmlCodeResult;
 import com.xiaokui.nexus.ai.model.MultiFileCodeResult;
 import com.xiaokui.nexus.core.AICodeGeneratorFacade;
@@ -17,7 +17,7 @@ import java.util.List;
 class AiCodeGeneratorServiceTest {
 
     @Resource
-    private AICodeGeneratorService aiCodeGeneratorService;
+    private AiCodeGeneratorService aiCodeGeneratorService;
 
 
     @Resource
